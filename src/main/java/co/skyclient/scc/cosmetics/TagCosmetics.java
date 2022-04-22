@@ -1,11 +1,11 @@
 package co.skyclient.scc.cosmetics;
 
-import cc.woverflow.onecore.utils.InternetUtils;
 import cc.woverflow.onecore.utils.JsonUtils;
 import co.skyclient.scc.utils.Files;
 import com.google.gson.*;
 import gg.essential.api.utils.Multithreading;
 import gg.essential.api.utils.WebUtil;
+import gg.essential.universal.ChatColor;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,10 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class TagCosmetics {
     private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -44,7 +41,7 @@ public class TagCosmetics {
         initialized = false;
         Multithreading.runAsync(() -> {
             try {
-                rawData = InternetUtils.fetchJsonElement(WebUtil.INSTANCE, "https://koxx12-dev.github.io/api/scc/tags.json").getAsJsonObject();
+                rawData = JsonUtils.asJsonElement(Objects.requireNonNull(WebUtil.fetchString("https://koxx12-dev.github.io/api/scc/tags.json")).replace('&', ChatColor.COLOR_CHAR)).getAsJsonObject();
                 Multithreading.runAsync(() -> {
                     try {
                         FileUtils.writeStringToFile(cacheFile, GSON.toJson(rawData), StandardCharsets.UTF_8);

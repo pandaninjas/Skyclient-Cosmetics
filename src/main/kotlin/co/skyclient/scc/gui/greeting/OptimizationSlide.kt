@@ -1,5 +1,6 @@
 package co.skyclient.scc.gui.greeting
 
+import cc.woverflow.onecore.utils.browseURL
 import club.sk1er.patcher.config.PatcherConfig
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.UIWrappedText
@@ -12,6 +13,9 @@ import co.skyclient.scc.gui.greeting.components.CorrectOutsidePixelConstraint
 import co.skyclient.scc.gui.greeting.components.GreetingSlide
 import co.skyclient.scc.SkyclientCosmetics
 import co.skyclient.scc.utils.TickDelay
+import gg.essential.elementa.constraints.SiblingConstraint
+import gg.essential.universal.UDesktop
+import gg.essential.vigilance.utils.onLeftClick
 import net.minecraft.client.settings.GameSettings
 import net.minecraft.util.MathHelper
 import java.awt.Color
@@ -32,6 +36,18 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
         textScale = 3.pixels()
     } childOf window
 
+    val secondaryText by UIWrappedText("""
+        Click here for a full explanation on what this changes.
+    """.trimIndent(), centered = true) constrain {
+        x = CenterConstraint()
+        y = SiblingConstraint(5f).also { it.constrainTo = text }
+        width = 100.percent()
+    } childOf window
+
+    init {
+        secondaryText.onLeftClick { UDesktop.browseURL("https://github.com/nacrt/SkyblockClient-REPO/blob/main/files/guides/skyclient_greeting_optimizer.md") }
+    }
+
     val progressText by UIText() constrain {
         color = Color.GREEN.darker().toConstraint()
         x = CenterConstraint()
@@ -45,6 +61,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                 try {
                     val settingsClass: Class<GameSettings> = mc.gameSettings.javaClass
                     val configClass = Class.forName("Config")
+                    val shadersClass = Class.forName("net.optifine.shaders.Shaders")
                     settingsClass.getFieldAndSetAccessible("ofFastRender")?.setBooleanSafe(mc.gameSettings, false)
                     configClass.getMethodAndSetAccessible("updateFramebufferSize")?.invokeSafe(null)
 
@@ -71,6 +88,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                         ?.invokeSafe(null)
 
                     settingsClass.getFieldAndSetAccessible("ofRain")?.setIntSafe(mc.gameSettings, 1)
+                    shadersClass.getMethodAndSetAccessible("setShaderPack")?.invokeSafe(null, "OFF")
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -127,7 +145,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
         noButton.setFloating(true)
     }
 
-    fun Class<*>.getFieldAndSetAccessible(name: String): Field? {
+    private fun Class<*>.getFieldAndSetAccessible(name: String): Field? {
         return try {
             val field = this.getDeclaredField(name)
             field.isAccessible = true
@@ -138,7 +156,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
         }
     }
 
-    fun Class<*>.getMethodAndSetAccessible(name: String): Method? {
+    private fun Class<*>.getMethodAndSetAccessible(name: String): Method? {
         return try {
             val method = this.getDeclaredMethod(name)
             method.isAccessible = true
@@ -149,7 +167,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
         }
     }
 
-    fun Field.setBooleanSafe(obj: Any?, value: Boolean) {
+    private fun Field.setBooleanSafe(obj: Any?, value: Boolean) {
         try {
             this.setBoolean(obj, value)
         } catch (e: Exception) {
@@ -157,7 +175,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
         }
     }
 
-    fun Field.setIntSafe(obj: Any?, value: Int) {
+    private fun Field.setIntSafe(obj: Any?, value: Int) {
         try {
             this.setInt(obj, value)
         } catch (e: Exception) {
@@ -165,9 +183,9 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
         }
     }
 
-    fun Method.invokeSafe(obj: Any?) {
+    private fun Method.invokeSafe(obj: Any?, vararg strings: String) {
         try {
-            this.invoke(obj)
+            this.invoke(obj, strings)
         } catch (e: Exception) {
             e.printStackTrace()
         }
