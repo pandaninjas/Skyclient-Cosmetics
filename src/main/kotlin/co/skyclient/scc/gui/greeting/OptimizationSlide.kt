@@ -120,6 +120,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
             }
             mc.gameSettings.setOptionFloatValue(GameSettings.Options.FRAMERATE_LIMIT, 260f)
             mc.gameSettings.setOptionValue(GameSettings.Options.RENDER_DISTANCE, 10)
+            mc.gameSettings.guiScale = 3
             mc.gameSettings.saveOptions()
             mc.gameSettings.loadOptions()
             mc.refreshResources()
