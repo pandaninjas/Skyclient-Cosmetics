@@ -12,6 +12,7 @@ import gg.essential.elementa.constraints.animation.Animations
 import gg.essential.elementa.dsl.*
 import gg.essential.elementa.utils.withAlpha
 import gg.essential.universal.GuiScale
+import gg.essential.universal.UMatrixStack
 import gg.essential.vigilance.gui.VigilancePalette
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import net.minecraft.client.Minecraft
@@ -24,6 +25,8 @@ open class GreetingSlide<T : GuiScreen>(private val nextGui: Class<T>, val onCli
             previousScale = Minecraft.getMinecraft().gameSettings.guiScale
         }
     }
+
+    private var hasInit = false
 
     private val background by UIBlock(VigilancePalette.getBackground()) constrain {
         x = 0.pixels()
@@ -94,24 +97,25 @@ open class GreetingSlide<T : GuiScreen>(private val nextGui: Class<T>, val onCli
         button.setFloating(true)
     }
 
-    init {
-        Window.enqueueRenderOperation {
+    override fun onDrawScreen(matrixStack: UMatrixStack, mouseX: Int, mouseY: Int, partialTicks: Float) {
+        if (!hasInit) {
+            hasInit = true
+            try {
+                @Suppress("UNCHECKED_CAST")
+                currentSlide = mc.currentScreen::class.java as Class<GreetingSlide<*>>
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             fade.setFloating(true)
             fade.animate {
                 setColorAnimation(Animations.LINEAR, 0.5f, TRANSPARENT_BLACK.toConstraint())
             }
-            Multithreading.runAsync {
-                while (true) {
-                    if (fade.getColor().alpha == 0) {
-                        Window.enqueueRenderOperation {
-                            fade.setFloating(false)
-                            setButtonFloat()
-                        }
-                        break
-                    } else {
-                        Thread.sleep(50)
-                    }
-                }
+        }
+        super.onDrawScreen(matrixStack, mouseX, mouseY, partialTicks)
+        if (fade.getColor().alpha == 0) {
+            Window.enqueueRenderOperation {
+                fade.setFloating(false)
+                setButtonFloat()
             }
         }
     }
@@ -119,5 +123,6 @@ open class GreetingSlide<T : GuiScreen>(private val nextGui: Class<T>, val onCli
     companion object {
         val TRANSPARENT_BLACK = Color(0, 0, 0, 0)
         var previousScale = Int.MIN_VALUE
+        var currentSlide: Class<GreetingSlide<*>>? = null
     }
 }

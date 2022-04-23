@@ -23,9 +23,13 @@ import co.skyclient.scc.cosmetics.TagCosmetics;
 import co.skyclient.scc.listeners.ChatListeners;
 import co.skyclient.scc.listeners.GuiListeners;
 import co.skyclient.scc.listeners.PlayerListeners;
+import co.skyclient.scc.mixins.ServerListAccessor;
 import co.skyclient.scc.rpc.RPC;
 import co.skyclient.scc.utils.Files;
 import de.jcm.discordgamesdk.Core;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.ServerList;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -33,7 +37,10 @@ import net.minecraftforge.fml.common.ProgressManager;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Locale;
 
 @Mod(modid = SkyclientCosmetics.MOD_ID, name = SkyclientCosmetics.MOD_NAME, version = SkyclientCosmetics.MOD_VERSION, clientSideOnly = true, acceptedMinecraftVersions = "[1.8.9]")
 public class SkyclientCosmetics {
@@ -109,5 +116,12 @@ public class SkyclientCosmetics {
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent event) {
         isPatcher = Loader.isModLoaded("patcher");
+        ServerList serverList = new ServerList(Minecraft.getMinecraft());
+        if (((ServerListAccessor) serverList).getServers().stream().noneMatch((a) -> StringUtils.endsWithAny(a.serverIP.toLowerCase(Locale.ENGLISH), "hypixel.net", "hypixel.io"))) {
+            serverList.addServerData(new ServerData("Hypixel", "mc.hypixel.net", false));
+            serverList.saveServerList();
+        }
     }
+
+
 }

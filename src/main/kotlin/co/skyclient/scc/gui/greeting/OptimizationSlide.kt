@@ -79,7 +79,14 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                     mc.renderGlobal.javaClass.getMethodAndSetAccessible("resetClouds")?.invokeSafe(mc.renderGlobal)
 
                     settingsClass.getFieldAndSetAccessible("ofFogType")?.setIntSafe(mc.gameSettings, 0)
-                    settingsClass.getFieldAndSetAccessible("ofConnectedTextures")?.setIntSafe(mc.gameSettings, 1)
+                    val connectedTextures = settingsClass.getFieldAndSetAccessible("ofConnectedTextures")
+                    try {
+                        if (connectedTextures?.getInt(null) == 2) {
+                            connectedTextures.setIntSafe(mc.gameSettings, 1)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                     settingsClass.getFieldAndSetAccessible("ofTranslucentBlocks")?.setIntSafe(mc.gameSettings, 1)
                     settingsClass.getFieldAndSetAccessible("ofDroppedItems")?.setIntSafe(mc.gameSettings, 1)
                     settingsClass.getFieldAndSetAccessible("ofVignette")?.setIntSafe(mc.gameSettings, 1)

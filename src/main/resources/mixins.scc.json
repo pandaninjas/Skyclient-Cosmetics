@@ -5,15 +5,15 @@
   "package": "co.skyclient.scc.mixins",
   "refmap": "mixins.scc.refmap.json",
   "mixins": [
+    "GuiMainMenuMixin",
+    "GuiWinGameMixin",
     "MinecraftMixin",
+    "ServerListAccessor",
     "TextureUtilMixin",
     "forge.FMLClientHandlerMixin",
     "forge.SplashProgressMixin",
     "replaymod.AbstractGuiTooltipMixin",
     "replaymod.GuiHandlerMixin",
     "replaymod.I18nMixin"
-  ],
-  "client": [
-    "GuiMainMenuMixin"
   ]
 }

@@ -1,9 +1,13 @@
 package co.skyclient.scc.gui;
 
 import co.skyclient.scc.gui.greeting.IntroductionGreetingSlide;
+import co.skyclient.scc.gui.greeting.components.GreetingSlide;
+import co.skyclient.scc.hooks.GuiWinGameHook;
 import co.skyclient.scc.utils.Files;
 import co.skyclient.scc.utils.TickDelay;
 import gg.essential.api.EssentialAPI;
+import gg.essential.universal.ChatColor;
+import gg.essential.universal.USound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.multiplayer.ServerData;
@@ -37,7 +41,6 @@ public class SkyClientMainMenu extends GuiMainMenu {
     private ResourceLocation backgroundTexture;
     private GuiButton selectedButton;
     private static Class<?> cosmeticGui;
-    private static boolean bypass = false;
 
     static {
         try {
@@ -228,9 +231,15 @@ public class SkyClientMainMenu extends GuiMainMenu {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        if ((!Files.greetingFile.exists() || EssentialAPI.getMinecraftUtil().isDevelopment()) && !bypass) {
-            bypass = true;
-            new TickDelay(3, () -> Minecraft.getMinecraft().displayGuiScreen(new IntroductionGreetingSlide()));
+        if (!Files.greetingFile.exists()) {
+            new TickDelay(2, () -> {
+                try {
+                    Class<GreetingSlide<?>> clazz = GreetingSlide.Companion.getCurrentSlide();
+                    Minecraft.getMinecraft().displayGuiScreen(clazz != null ? clazz.newInstance() : new IntroductionGreetingSlide());
+                } catch (InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            });
         }
         //background
         GlStateManager.disableAlpha();
@@ -260,7 +269,10 @@ public class SkyClientMainMenu extends GuiMainMenu {
         glPopMatrix();
         GlStateManager.disableBlend();
 
-        this.drawString(this.fontRendererObj, MOJANG_COPYRIGHT_TEXT, this.width - this.fontRendererObj.getStringWidth(MOJANG_COPYRIGHT_TEXT) - 2, this.height - 10, -1);
+        int x = this.width - this.fontRendererObj.getStringWidth(MOJANG_COPYRIGHT_TEXT) - 2;
+        int y = this.height - 10;
+        boolean isMouseOver = (mouseX > x && mouseX < width - 1) && (mouseY > y && mouseY < height);
+        this.drawString(this.fontRendererObj, isMouseOver ? ChatColor.UNDERLINE + MOJANG_COPYRIGHT_TEXT + ChatColor.RESET : MOJANG_COPYRIGHT_TEXT, x, y, -1);
 
         for (GuiButton guiButton : this.buttonList) {
             guiButton.drawButton(this.mc, mouseX, mouseY);
@@ -283,6 +295,16 @@ public class SkyClientMainMenu extends GuiMainMenu {
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if (mouseButton == 0) {
+            //noinspection DuplicatedCode
+            int x = this.width - this.fontRendererObj.getStringWidth(MOJANG_COPYRIGHT_TEXT) - 2;
+            int y = this.height - 10;
+            boolean isMouseOver = (mouseX > x && mouseX < width - 1) && (mouseY > y && mouseY < height);
+            if (isMouseOver) {
+                GuiWinGame gui = new GuiWinGame();
+                ((GuiWinGameHook) gui).setMainMenu();
+                EssentialAPI.getGuiUtil().openScreen(gui);
+                USound.INSTANCE.playButtonPress();
+            }
             for (int i = 0; i < this.buttonList.size(); ++i) {
                 GuiButton guibutton = this.buttonList.get(i);
                 if (!guibutton.mousePressed(this.mc, mouseX, mouseY)) continue;
