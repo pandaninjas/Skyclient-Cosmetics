@@ -41,49 +41,53 @@ public class TagCosmetics {
         initialized = false;
         Multithreading.runAsync(() -> {
             try {
-                rawData = JsonUtils.asJsonElement(Objects.requireNonNull(WebUtil.fetchString("https://koxx12-dev.github.io/api/scc/tags.json")).replace('&', ChatColor.COLOR_CHAR)).getAsJsonObject();
-                Multithreading.runAsync(() -> {
-                    try {
-                        FileUtils.writeStringToFile(cacheFile, GSON.toJson(rawData), StandardCharsets.UTF_8);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (cacheFile.exists()) {
-                    try {
-                        rawData = JsonUtils.asJsonElement(FileUtils.readFileToString(cacheFile, StandardCharsets.UTF_8)).getAsJsonObject();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                try {
+                    rawData = JsonUtils.asJsonElement(Objects.requireNonNull(WebUtil.fetchString("https://skyclient.co/assets/tags.json")).replace('&', ChatColor.COLOR_CHAR)).getAsJsonObject();
+                    Multithreading.runAsync(() -> {
+                        try {
+                            FileUtils.writeStringToFile(cacheFile, GSON.toJson(rawData), StandardCharsets.UTF_8);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    if (cacheFile.exists()) {
+                        try {
+                            rawData = JsonUtils.asJsonElement(FileUtils.readFileToString(cacheFile, StandardCharsets.UTF_8)).getAsJsonObject();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                            return;
+                        }
+                    } else {
                         return;
                     }
-                } else {
-                    return;
                 }
-            }
-            tagJson = rawData.getAsJsonObject("tags");
-            permsJson = rawData.getAsJsonObject("perms");
-            ArrayList<Tag> tagsToBeAdded = new ArrayList<>();
-            ArrayList<TagPerm> permsToBeAdded = new ArrayList<>();
-            for (Map.Entry<String, JsonElement> entry : tagJson.entrySet()) {
-                JsonArray array = entry.getValue().getAsJsonArray();
-                tagsToBeAdded.add(new Tag(array.get(0).getAsString(), (array.size() == 2 ? array.get(1).getAsString() : array.get(0).getAsString()), entry.getKey()));
-            }
-            for (Map.Entry<String, JsonElement> entry : permsJson.entrySet()) {
-                permsToBeAdded.add(new TagPerm(entry.getValue().getAsJsonArray(), entry.getKey()));
-            }
-            for (TagPerm perm : permsToBeAdded) {
-                for (Tag tag : tagsToBeAdded) {
-                    if (tag.getIdentifier().equals(perm.getIdentifier())) {
-                        for (String user : perm.getUsers()) {
-                            tags.put(user.toLowerCase(Locale.ENGLISH), tag);
+                tagJson = rawData.getAsJsonObject("tags");
+                permsJson = rawData.getAsJsonObject("perms");
+                ArrayList<Tag> tagsToBeAdded = new ArrayList<>();
+                ArrayList<TagPerm> permsToBeAdded = new ArrayList<>();
+                for (Map.Entry<String, JsonElement> entry : tagJson.entrySet()) {
+                    JsonArray array = entry.getValue().getAsJsonArray();
+                    tagsToBeAdded.add(new Tag(array.get(0).getAsString(), (array.size() == 2 ? array.get(1).getAsString() : array.get(0).getAsString()), entry.getKey()));
+                }
+                for (Map.Entry<String, JsonElement> entry : permsJson.entrySet()) {
+                    permsToBeAdded.add(new TagPerm(entry.getValue().getAsJsonArray(), entry.getKey()));
+                }
+                for (TagPerm perm : permsToBeAdded) {
+                    for (Tag tag : tagsToBeAdded) {
+                        if (tag.getIdentifier().equals(perm.getIdentifier())) {
+                            for (String user : perm.getUsers()) {
+                                tags.put(user.toLowerCase(Locale.ENGLISH), tag);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
+                initialized = true;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            initialized = true;
         });
     }
 
