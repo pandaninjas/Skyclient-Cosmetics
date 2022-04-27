@@ -3,16 +3,12 @@ package co.skyclient.scc.mixins;
 import co.skyclient.scc.SkyclientCosmetics;
 import co.skyclient.scc.config.Settings;
 import co.skyclient.scc.gui.SkyClientMainMenu;
-import co.skyclient.scc.utils.Files;
 import co.skyclient.scc.utils.IconLoader;
 import gg.essential.api.EssentialAPI;
-import gg.essential.universal.UDesktop;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.settings.GameSettings;
 import org.lwjgl.opengl.Display;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,11 +32,6 @@ public abstract class MinecraftMixin {
                 displayGuiScreen(new SkyClientMainMenu());
             }
         }
-    }
-
-    @Redirect(method = "startGame", at = @At(value = "FIELD", target = "Lnet/minecraft/client/settings/GameSettings;fullScreen:Z", opcode = Opcodes.GETFIELD))
-    private boolean redirectFullScreen(GameSettings instance) {
-        return instance.fullScreen || (!UDesktop.isMac() && !Files.greetingFile.exists());
     }
 
     @Inject(method = "setWindowIcon", at = @At("HEAD"), cancellable = true)
