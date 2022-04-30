@@ -18,13 +18,11 @@
 package co.skyclient.scc.config;
 
 import co.skyclient.scc.cosmetics.TagCosmetics;
-import co.skyclient.scc.utils.Files;
 import gg.essential.vigilance.Vigilant;
 import gg.essential.vigilance.data.Property;
 import gg.essential.vigilance.data.PropertyType;
 
 import java.io.File;
-import java.io.IOException;
 
 public class Settings extends Vigilant {
 
@@ -66,9 +64,6 @@ public class Settings extends Vigilant {
     @Property(type = PropertyType.TEXT, name = "Hypixel API key", description = "Hypixel API key used for requests", category = "Main", subcategory = "Hypixel", protectedText = true)
     public static String hpApiKey = "";
 
-    @Property(type = PropertyType.SWITCH, name = "Hide Pet Lisena", description = "WARNING: TURNING THIS ON WILL BREAK EVERYTHING", category = "Misc", subcategory = "Gui")
-    public static boolean hidePetLis = false;
-
     //@Property(type = PropertyType.TEXT, name = "Skyclient Cosmetics API key", description = "SkyclientCosmetics Api key is used for every feature of this mod", category = "Main", subcategory = "Main", protectedText = true)
     //public static String SCCApiKey = "";
 
@@ -88,20 +83,5 @@ public class Settings extends Vigilant {
         //addDependency("reloadTags","showTags");
         //addDependency(SettingsClass.getField("r"),SettingsClass.getField("showTags"));
         addDependency("displayTags","showTags");
-
-        registerListener("hidePetLis",
-                a -> {
-            if ((boolean) a) {
-                try {
-                    new File(Files.sccFolder,"HIDEPETLIS").createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                if (new File(Files.sccFolder,"HIDEPETLIS").exists()) {
-                    new File(Files.sccFolder, "HIDEPETLIS").delete();
-                }
-            }
-        });
     }
 }

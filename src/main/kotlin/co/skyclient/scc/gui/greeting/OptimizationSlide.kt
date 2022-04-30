@@ -2,22 +2,25 @@ package co.skyclient.scc.gui.greeting
 
 import cc.woverflow.onecore.utils.browseURL
 import club.sk1er.patcher.config.PatcherConfig
+import co.skyclient.scc.SkyclientCosmetics
+import co.skyclient.scc.gui.greeting.components.CorrectOutsidePixelConstraint
+import co.skyclient.scc.gui.greeting.components.GreetingSlide
+import co.skyclient.scc.utils.TickDelay
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.UIWrappedText
 import gg.essential.elementa.components.Window
 import gg.essential.elementa.constraints.CenterConstraint
+import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.elementa.dsl.*
 import gg.essential.universal.ChatColor
-import gg.essential.vigilance.gui.settings.ButtonComponent
-import co.skyclient.scc.gui.greeting.components.CorrectOutsidePixelConstraint
-import co.skyclient.scc.gui.greeting.components.GreetingSlide
-import co.skyclient.scc.SkyclientCosmetics
-import co.skyclient.scc.utils.TickDelay
-import gg.essential.elementa.constraints.SiblingConstraint
 import gg.essential.universal.UDesktop
+import gg.essential.vigilance.gui.settings.ButtonComponent
 import gg.essential.vigilance.utils.onLeftClick
+import net.minecraft.client.Minecraft
 import net.minecraft.client.settings.GameSettings
 import net.minecraft.util.MathHelper
+import net.minecraftforge.fml.common.Loader
+import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion
 import java.awt.Color
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -81,8 +84,8 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                     settingsClass.getFieldAndSetAccessible("ofFogType")?.setIntSafe(mc.gameSettings, 0)
                     val connectedTextures = settingsClass.getFieldAndSetAccessible("ofConnectedTextures")
                     try {
-                        if (connectedTextures?.getInt(null) == 2) {
-                            connectedTextures.setIntSafe(mc.gameSettings, 1)
+                        if ((connectedTextures?.getInt(null) == 0) && isNewCrashPatch()) {
+                            connectedTextures.setIntSafe(Minecraft.getMinecraft().gameSettings, 2)
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -101,19 +104,23 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                 }
             }
             if (SkyclientCosmetics.isPatcher) {
-                PatcherConfig.cullingFix = true
-                PatcherConfig.separateResourceLoading = true
-                PatcherConfig.disableAchievements = true
-                PatcherConfig.autoTitleScale = true
-                PatcherConfig.unfocusedFPS = true
-                PatcherConfig.cleanProjectiles = true
-                PatcherConfig.numericalEnchants = true
-                PatcherConfig.staticItems = true
-                PatcherConfig.limitChunks = true
-                PatcherConfig.playerBackFaceCulling = true
-                PatcherConfig.openToLanReplacement = 1
-                PatcherConfig.INSTANCE.markDirty()
-                PatcherConfig.INSTANCE.writeData()
+                try {
+                    PatcherConfig.cullingFix = true
+                    PatcherConfig.separateResourceLoading = true
+                    PatcherConfig.disableAchievements = true
+                    PatcherConfig.autoTitleScale = true
+                    PatcherConfig.unfocusedFPS = true
+                    PatcherConfig.cleanProjectiles = true
+                    PatcherConfig.numericalEnchants = true
+                    PatcherConfig.staticItems = true
+                    PatcherConfig.limitChunks = true
+                    PatcherConfig.playerBackFaceCulling = true
+                    PatcherConfig.openToLanReplacement = 1
+                    PatcherConfig.INSTANCE.markDirty()
+                    PatcherConfig.INSTANCE.writeData()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
             mc.gameSettings.saveOptions()
             if (mc.gameSettings.entityShadows) {
@@ -151,6 +158,19 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
     override fun setButtonFloat() {
         yesButton.setFloating(true)
         noButton.setFloating(true)
+    }
+
+    private fun isNewCrashPatch(): Boolean {
+        try {
+            Loader.instance().activeModList.forEach { mod ->
+                if ("crashpatch" == mod.modId && DefaultArtifactVersion(mod.version.substringBefore("-alpha").substringBefore("-beta")) > DefaultArtifactVersion("1.3.9")) {
+                    return true
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return false
     }
 
     private fun Class<*>.getFieldAndSetAccessible(name: String): Field? {
