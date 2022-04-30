@@ -84,8 +84,12 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                     settingsClass.getFieldAndSetAccessible("ofFogType")?.setIntSafe(mc.gameSettings, 0)
                     val connectedTextures = settingsClass.getFieldAndSetAccessible("ofConnectedTextures")
                     try {
-                        if ((connectedTextures?.getInt(null) == 0) && isNewCrashPatch()) {
-                            connectedTextures.setIntSafe(Minecraft.getMinecraft().gameSettings, 2)
+                        if (isNewCrashPatch()) {
+                            connectedTextures?.getInt(null).let {
+                                if (it == 0 || it == 3) {
+                                    connectedTextures?.setIntSafe(Minecraft.getMinecraft().gameSettings, 2)
+                                }
+                            }
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
