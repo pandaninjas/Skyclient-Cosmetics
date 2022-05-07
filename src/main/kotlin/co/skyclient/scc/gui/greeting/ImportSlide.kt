@@ -49,7 +49,7 @@ class ImportSlide : GreetingSlide<OptimizationSlide>(OptimizationSlide::class.ja
     } childOf window
 
     val secondaryText by UIWrappedText("""
-        This means if you previously changed settings for your mods, Skyclient would copy those settings.
+        This means if you previously changed settings for your mods before installing SkyClient, Skyclient would copy those settings.
         ${ChatColor.ITALIC}You will still need to import resource packs manually. Please contact the SkyClient Discord for more information.${ChatColor.RESET}
     """.trimIndent(), centered = true) constrain {
         x = CenterConstraint()

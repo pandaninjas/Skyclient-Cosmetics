@@ -1,11 +1,14 @@
 package co.skyclient.scc.gui.greeting
 
 import cc.woverflow.onecore.utils.browseURL
+import cc.woverflow.onecore.utils.sendBrandedNotification
 import club.sk1er.patcher.config.PatcherConfig
 import co.skyclient.scc.SkyclientCosmetics
 import co.skyclient.scc.gui.greeting.components.CorrectOutsidePixelConstraint
 import co.skyclient.scc.gui.greeting.components.GreetingSlide
+import co.skyclient.scc.utils.Files
 import co.skyclient.scc.utils.TickDelay
+import gg.essential.api.utils.Multithreading
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.UIWrappedText
 import gg.essential.elementa.components.Window
@@ -17,10 +20,9 @@ import gg.essential.universal.UDesktop
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import gg.essential.vigilance.utils.onLeftClick
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiMainMenu
 import net.minecraft.client.settings.GameSettings
 import net.minecraft.util.MathHelper
-import net.minecraftforge.fml.common.Loader
-import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion
 import java.awt.Color
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -84,7 +86,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                     settingsClass.getFieldAndSetAccessible("ofFogType")?.setIntSafe(mc.gameSettings, 0)
                     val connectedTextures = settingsClass.getFieldAndSetAccessible("ofConnectedTextures")
                     try {
-                        if (isNewCrashPatch()) {
+                        if (isNewPatcher) {
                             connectedTextures?.getInt(null).let {
                                 if (it == 0 || it == 3) {
                                     connectedTextures?.setIntSafe(Minecraft.getMinecraft().gameSettings, 2)
@@ -164,72 +166,109 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
         noButton.setFloating(true)
     }
 
-    private fun isNewCrashPatch(): Boolean {
-        try {
-            Loader.instance().activeModList.forEach { mod ->
-                if ("crashpatch" == mod.modId && DefaultArtifactVersion(mod.version.substringBefore("-alpha").substringBefore("-beta")) > DefaultArtifactVersion("1.3.9")) {
-                    return true
+    companion object {
+        private var isNewPatcher = false
+
+        fun sendCTMFixNotification() {
+            isNewPatcher = true
+            if (Files.greetingFile.exists()) {
+                try {
+                    val settingsClass: Class<GameSettings> = Minecraft.getMinecraft().gameSettings.javaClass
+                    val field = settingsClass.getFieldAndSetAccessible("ofConnectedTextures")
+                    field?.let { property ->
+                        try {
+                            property.getInt(Minecraft.getMinecraft().gameSettings).let {
+                                if (it == 0 || it == 3) {
+                                    sendBrandedNotification("SkyClientCosmetics", "New versions of Patcher fixes the Connected Textures crash on Forge.\n\nClick here to enable Connected Textures!", duration = 10f, action = {
+                                        if (Minecraft.getMinecraft().theWorld != null) {
+                                            Minecraft.getMinecraft().theWorld.sendQuittingDisconnectingPacket()
+                                            Minecraft.getMinecraft().loadWorld(null)
+                                            Minecraft.getMinecraft().displayGuiScreen(GuiMainMenu())
+                                        }
+                                        Multithreading.runAsync {
+                                            while (Minecraft.getMinecraft().theWorld != null) {
+                                                Thread.sleep(100)
+                                            }
+                                            Minecraft.getMinecraft().addScheduledTask {
+                                                try {
+                                                    property.setInt(Minecraft.getMinecraft().gameSettings, 2)
+                                                } catch (e: Exception) {
+                                                    e.printStackTrace()
+                                                    sendBrandedNotification("SkyClientCosmetics", "Failed to enable Connected Textures! Enable it manually in Options -> Video Settings -> Quality -> Connected Textures.", duration = 10f)
+                                                    return@addScheduledTask
+                                                }
+                                                Minecraft.getMinecraft().gameSettings.saveOptions()
+                                                Minecraft.getMinecraft().gameSettings.loadOptions()
+                                                Minecraft.getMinecraft().refreshResources()
+                                            }
+                                        }
+                                    })
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
-        return false
-    }
 
-    private fun Class<*>.getFieldAndSetAccessible(name: String): Field? {
-        return try {
-            val field = this.getDeclaredField(name)
-            field.isAccessible = true
-            field
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+        private fun Class<*>.getFieldAndSetAccessible(name: String): Field? {
+            return try {
+                val field = this.getDeclaredField(name)
+                field.isAccessible = true
+                field
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
-    }
 
-    private fun Class<*>.getMethodAndSetAccessible(name: String): Method? {
-        return try {
-            val method = this.getDeclaredMethod(name)
-            method.isAccessible = true
-            method
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+        private fun Class<*>.getMethodAndSetAccessible(name: String): Method? {
+            return try {
+                val method = this.getDeclaredMethod(name)
+                method.isAccessible = true
+                method
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
-    }
 
-    private fun Field.setBooleanSafe(obj: Any?, value: Boolean) {
-        try {
-            this.setBoolean(obj, value)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        private fun Field.setBooleanSafe(obj: Any?, value: Boolean) {
+            try {
+                this.setBoolean(obj, value)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-    }
 
-    private fun Field.setIntSafe(obj: Any?, value: Int) {
-        try {
-            this.setInt(obj, value)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        private fun Field.setIntSafe(obj: Any?, value: Int) {
+            try {
+                this.setInt(obj, value)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-    }
 
-    private fun Method.invokeSafe(obj: Any?, vararg strings: String) {
-        try {
-            this.invoke(obj, strings)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        private fun Method.invokeSafe(obj: Any?, vararg strings: String) {
+            try {
+                this.invoke(obj, strings)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-    }
 
-    private fun isOptifineLoaded(): Boolean {
-        return try {
-            val clazz = Class.forName("Config")
-            clazz.getDeclaredField("OF_RELEASE")
-            true
-        } catch (_: Exception) {
-            false
+        private fun isOptifineLoaded(): Boolean {
+            return try {
+                val clazz = Class.forName("Config")
+                clazz.getDeclaredField("OF_RELEASE")
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
     }
 }

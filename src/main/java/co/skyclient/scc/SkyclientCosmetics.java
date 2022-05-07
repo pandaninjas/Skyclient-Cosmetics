@@ -20,6 +20,7 @@ package co.skyclient.scc;
 import co.skyclient.scc.commands.SccComand;
 import co.skyclient.scc.config.Settings;
 import co.skyclient.scc.cosmetics.TagCosmetics;
+import co.skyclient.scc.gui.greeting.OptimizationSlide;
 import co.skyclient.scc.listeners.ChatListeners;
 import co.skyclient.scc.listeners.GuiListeners;
 import co.skyclient.scc.listeners.PlayerListeners;
@@ -27,16 +28,21 @@ import co.skyclient.scc.mixins.ServerListAccessor;
 import co.skyclient.scc.rpc.RPC;
 import co.skyclient.scc.utils.Files;
 import de.jcm.discordgamesdk.Core;
+import io.github.moulberry.notenoughupdates.NotEnoughUpdates;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.ProgressManager;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -62,6 +68,8 @@ public class SkyclientCosmetics {
     public static Logger LOGGER;
 
     public static boolean isPatcher;
+    public static boolean isNEU;
+    private static boolean hasFailed;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
@@ -115,13 +123,49 @@ public class SkyclientCosmetics {
 
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent event) {
-        isPatcher = Loader.isModLoaded("patcher");
+        ProgressManager.ProgressBar progress = ProgressManager.push("Postinitialization", 2);
+
+        progress.step("Detecting Mods");
+        for (ModContainer mod : Loader.instance().getActiveModList()) {
+            if ("patcher".equals(mod.getModId())) {
+                isPatcher = true;
+                System.out.println(StringUtils.substringBeforeLast(mod.getVersion(), "+"));
+                try {
+                    if (new DefaultArtifactVersion(StringUtils.substringBeforeLast(mod.getVersion(), "+")).compareTo(new DefaultArtifactVersion("1.8.1")) > 0) {
+                        OptimizationSlide.Companion.sendCTMFixNotification();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if ("notenoughupdates".equals(mod.getModId())) {
+                isNEU = true;
+            }
+        }
+
+        progress.step("Setting Default Servers");
         ServerList serverList = new ServerList(Minecraft.getMinecraft());
         if (((ServerListAccessor) serverList).getServers().stream().noneMatch((a) -> StringUtils.endsWithAny(a.serverIP.toLowerCase(Locale.ENGLISH), "hypixel.net", "hypixel.io"))) {
             serverList.addServerData(new ServerData("Hypixel", "mc.hypixel.net", false));
             serverList.saveServerList();
         }
+
+        ProgressManager.pop(progress);
     }
 
+    @SubscribeEvent
+    public void onWorldLoad(WorldEvent.Load event) {
+        if (isNEU && !hasFailed) {
+            try {
+                if (NotEnoughUpdates.INSTANCE.config.dungeonMap.dmEnable) {
+                    NotEnoughUpdates.INSTANCE.config.dungeonMap.dmEnable = false;
+                    NotEnoughUpdates.INSTANCE.saveConfig();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                hasFailed = true;
+            }
+        }
+    }
 
 }
