@@ -120,6 +120,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                     PatcherConfig.numericalEnchants = true
                     PatcherConfig.staticItems = true
                     PatcherConfig.limitChunks = true
+                    PatcherConfig.chunkUpdateLimit = 250
                     PatcherConfig.playerBackFaceCulling = true
                     PatcherConfig.openToLanReplacement = 1
                     PatcherConfig.INSTANCE.markDirty()

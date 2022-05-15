@@ -17,6 +17,7 @@
 
 package co.skyclient.scc;
 
+import club.sk1er.patcher.config.PatcherConfig;
 import co.skyclient.scc.commands.SccComand;
 import co.skyclient.scc.config.Settings;
 import co.skyclient.scc.cosmetics.TagCosmetics;
@@ -43,9 +44,12 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 @Mod(modid = SkyclientCosmetics.MOD_ID, name = SkyclientCosmetics.MOD_NAME, version = SkyclientCosmetics.MOD_VERSION, clientSideOnly = true, acceptedMinecraftVersions = "[1.8.9]")
@@ -123,7 +127,7 @@ public class SkyclientCosmetics {
 
     @Mod.EventHandler
     public void onPostInit(FMLPostInitializationEvent event) {
-        ProgressManager.ProgressBar progress = ProgressManager.push("Postinitialization", 2);
+        ProgressManager.ProgressBar progress = ProgressManager.push("Postinitialization", 3);
 
         progress.step("Detecting Mods");
         for (ModContainer mod : Loader.instance().getActiveModList()) {
@@ -141,6 +145,22 @@ public class SkyclientCosmetics {
             if ("notenoughupdates".equals(mod.getModId())) {
                 isNEU = true;
             }
+        }
+
+        progress.step("Checking Greeting Slides");
+
+        try {
+            String text = FileUtils.readFileToString(Files.greetingFile, StandardCharsets.UTF_8);
+            if (!text.endsWith("2")) {
+                FileUtils.writeStringToFile(Files.greetingFile, text + "\n2", StandardCharsets.UTF_8);
+                if (isPatcher) {
+                    PatcherConfig.chunkUpdateLimit = 250;
+                    PatcherConfig.INSTANCE.markDirty();
+                    PatcherConfig.INSTANCE.writeData();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         progress.step("Setting Default Servers");

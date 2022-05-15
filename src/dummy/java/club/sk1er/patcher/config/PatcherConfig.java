@@ -15,6 +15,7 @@ public class PatcherConfig extends Vigilant {
     public static boolean numericalEnchants;
     public static boolean staticItems;
     public static boolean limitChunks;
+    public static int chunkUpdateLimit;
     public static boolean playerBackFaceCulling;
     public static int openToLanReplacement;
 

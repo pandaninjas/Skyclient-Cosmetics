@@ -11,7 +11,7 @@ import java.awt.Color
 
 class EndSlide : GreetingSlide<GuiMainMenu>(GuiMainMenu::class.java, {
     Files.greetingFile.createNewFile()
-    Files.greetingFile.writeText("Deleting this file will cause the SKyClient Greeting slides to show again. If you want to do that, go ahead, if you don't, don't.")
+    Files.greetingFile.writeText("DELETING OR EDITING THIS FILE WILL CAUSE WEIRD THINGS TO HAPPEN! DO NOT TOUCH THIS UNLESS A SKYCLIENT STAFF MEMBER HAS GIVEN YOU PERMISSION TO DO SO!\n2")
     Thread.sleep(1000)
 }) {
     val title by UIText("That's it!") constrain {
