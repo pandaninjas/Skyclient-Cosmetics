@@ -1,5 +1,7 @@
 package co.skyclient.scc.gui;
 
+import gg.essential.api.utils.Multithreading;
+import gg.essential.api.utils.WebUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -52,6 +54,7 @@ public class CustomSplashProgress {
     private static final IResourcePack mcPack = Minecraft.getMinecraft().mcDefaultResourcePack;
     private static final IResourcePack fmlPack = createResourcePack(FMLSanityChecker.fmlLocation);
     private static final IntBuffer buf = BufferUtils.createIntBuffer(4 * 1024 * 1024);
+    private static String funFact = null;
     private static Drawable d;
     private static volatile boolean pause = false;
     private static volatile boolean done = false;
@@ -181,6 +184,19 @@ public class CustomSplashProgress {
         //Call this ASAP if splash is enabled so that threading doesn't cause issues later
         getMaxTextureSize();
 
+        Multithreading.runAsync(() -> {
+            try {
+                String text = WebUtil.fetchString("https://skyclient.co/assets/funfacts.txt");
+                if (text != null) {
+                    String[] lines = text.split("\n");
+                    int index = (int) (Math.random() * lines.length);
+                    funFact = lines[index];
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
         //Thread mainThread = Thread.currentThread();
         thread = new Thread(new Runnable() {
             private final int barWidth = 400;
@@ -217,6 +233,14 @@ public class CustomSplashProgress {
                     glMatrixMode(GL_MODELVIEW);
                     glLoadIdentity();
 
+                    // memory usage
+                    if (showMemory) {
+                        glPushMatrix();
+                        glTranslatef(320 - (float) barWidth / 2, 20, 0);
+                        drawMemoryBar();
+                        glPopMatrix();
+                    }
+
                     // logo
                     glPushMatrix();
                     setColor(backgroundColor);
@@ -237,11 +261,13 @@ public class CustomSplashProgress {
                     glDisable(GL_TEXTURE_2D);
                     glPopMatrix();
 
-                    // memory usage
-                    if (showMemory) {
+                    if (funFact != null && !funFact.isEmpty()) {
                         glPushMatrix();
-                        glTranslatef(320 - (float) barWidth / 2, 20, 0);
-                        drawMemoryBar();
+                        setColor(fontColor);
+                        glScalef(2, 2, 1);
+                        glEnable(GL_TEXTURE_2D);
+                        fontRenderer.drawString(funFact, 160 - (fontRenderer.getStringWidth(funFact) / 2), 180 - textHeight2, 0x000000);
+                        glDisable(GL_TEXTURE_2D);
                         glPopMatrix();
                     }
 
