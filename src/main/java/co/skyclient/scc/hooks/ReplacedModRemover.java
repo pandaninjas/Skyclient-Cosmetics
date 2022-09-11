@@ -1,9 +1,9 @@
 package co.skyclient.scc.hooks;
 
-import cc.woverflow.onecore.tweaker.OneCoreTweaker;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.MalformedJsonException;
+import gg.essential.loader.stage0.EssentialSetupTweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
@@ -14,7 +14,7 @@ import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class ReplacedModRemover extends OneCoreTweaker {
+public class ReplacedModRemover extends EssentialSetupTweaker {
     private static final JsonParser PARSER = new JsonParser();
 
     @Override

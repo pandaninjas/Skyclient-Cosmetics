@@ -1,13 +1,12 @@
 package co.skyclient.scc.gui.greeting
 
-import cc.woverflow.onecore.utils.browseURL
-import cc.woverflow.onecore.utils.sendBrandedNotification
 import club.sk1er.patcher.config.PatcherConfig
 import co.skyclient.scc.SkyclientCosmetics
 import co.skyclient.scc.gui.greeting.components.CorrectOutsidePixelConstraint
 import co.skyclient.scc.gui.greeting.components.GreetingSlide
 import co.skyclient.scc.utils.Files
 import co.skyclient.scc.utils.TickDelay
+import gg.essential.api.EssentialAPI
 import gg.essential.api.utils.Multithreading
 import gg.essential.elementa.components.UIText
 import gg.essential.elementa.components.UIWrappedText
@@ -26,6 +25,7 @@ import net.minecraft.util.MathHelper
 import java.awt.Color
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import java.net.URI
 
 class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.java) {
     init {
@@ -50,7 +50,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
     } childOf window
 
     init {
-        secondaryText.onLeftClick { UDesktop.browseURL("https://github.com/nacrt/SkyblockClient-REPO/blob/main/files/guides/skyclient_greeting_optimizer.md") }
+        secondaryText.onLeftClick { UDesktop.browse(URI.create("https://github.com/nacrt/SkyblockClient-REPO/blob/main/files/guides/skyclient_greeting_optimizer.md")) }
     }
 
     val progressText by UIText() constrain {
@@ -180,7 +180,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                         try {
                             property.getInt(Minecraft.getMinecraft().gameSettings).let {
                                 if (it == 0 || it == 3) {
-                                    sendBrandedNotification("SkyClientCosmetics", "New versions of Patcher fixes the Connected Textures crash on Forge.\n\nClick here to enable Connected Textures!", duration = 10f, action = {
+                                    EssentialAPI.getNotifications().push("SkyClientCosmetics", "New versions of Patcher fixes the Connected Textures crash on Forge.\n\nClick here to enable Connected Textures!", duration = 10f, action = {
                                         if (Minecraft.getMinecraft().theWorld != null) {
                                             Minecraft.getMinecraft().theWorld.sendQuittingDisconnectingPacket()
                                             Minecraft.getMinecraft().loadWorld(null)
@@ -195,7 +195,7 @@ class OptimizationSlide : GreetingSlide<HUDChachySlide>(HUDChachySlide::class.ja
                                                     property.setInt(Minecraft.getMinecraft().gameSettings, 2)
                                                 } catch (e: Exception) {
                                                     e.printStackTrace()
-                                                    sendBrandedNotification("SkyClientCosmetics", "Failed to enable Connected Textures! Enable it manually in Options -> Video Settings -> Quality -> Connected Textures.", duration = 10f)
+                                                    EssentialAPI.getNotifications().push("SkyClientCosmetics", "Failed to enable Connected Textures! Enable it manually in Options -> Video Settings -> Quality -> Connected Textures.", duration = 10f)
                                                     return@addScheduledTask
                                                 }
                                                 Minecraft.getMinecraft().gameSettings.saveOptions()

@@ -1,6 +1,5 @@
 package co.skyclient.scc.gui.greeting
 
-import cc.woverflow.onecore.utils.fetchJsonElement
 import gg.essential.api.utils.Multithreading
 import gg.essential.api.utils.WebUtil
 import gg.essential.elementa.components.UIText
@@ -13,6 +12,7 @@ import gg.essential.universal.ChatColor
 import gg.essential.vigilance.gui.settings.ButtonComponent
 import co.skyclient.scc.gui.greeting.components.CorrectOutsidePixelConstraint
 import co.skyclient.scc.gui.greeting.components.GreetingSlide
+import com.google.gson.JsonParser
 import net.minecraft.client.Minecraft
 import net.minecraft.launchwrapper.Launch
 import java.awt.Color
@@ -70,7 +70,7 @@ class ImportSlide : GreetingSlide<OptimizationSlide>(OptimizationSlide::class.ja
             progressText.setText("Downloading config locations...")
             val configLocations = arrayListOf<String>()
             try {
-                WebUtil.fetchJsonElement("https://raw.githubusercontent.com/nacrt/SkyblockClient-REPO/main/files/config_locations.json").asJsonArray.forEach {
+                JsonParser().parse(WebUtil.fetchString("https://raw.githubusercontent.com/nacrt/SkyblockClient-REPO/main/files/config_locations.json")).asJsonArray.forEach {
                     configLocations.add(it.asString)
                 }
             } catch (e: Exception) {

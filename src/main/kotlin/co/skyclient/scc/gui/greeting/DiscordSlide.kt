@@ -1,13 +1,13 @@
 package co.skyclient.scc.gui.greeting
 
-import cc.woverflow.onecore.utils.browseURL
+import co.skyclient.scc.gui.greeting.components.GreetingSlide
 import gg.essential.elementa.components.UIWrappedText
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.dsl.*
 import gg.essential.universal.ChatColor
 import gg.essential.universal.UDesktop
 import gg.essential.vigilance.utils.onLeftClick
-import co.skyclient.scc.gui.greeting.components.GreetingSlide
+import java.net.URI
 
 class DiscordSlide : GreetingSlide<ImportSlide>(ImportSlide::class.java) {
     val text by UIWrappedText("""
@@ -20,6 +20,6 @@ class DiscordSlide : GreetingSlide<ImportSlide>(ImportSlide::class.java) {
     } childOf window
 
     init {
-        text.onLeftClick { UDesktop.browseURL("https://inv.wtf/skyclient") }
+        text.onLeftClick { UDesktop.browse(URI.create("https://inv.wtf/skyclient")) }
     }
 }

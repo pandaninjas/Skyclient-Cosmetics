@@ -1,6 +1,5 @@
 package co.skyclient.scc.cosmetics;
 
-import cc.woverflow.onecore.utils.JsonUtils;
 import co.skyclient.scc.utils.Files;
 import com.google.gson.*;
 import gg.essential.api.utils.Multithreading;
@@ -42,7 +41,7 @@ public class TagCosmetics {
         Multithreading.runAsync(() -> {
             try {
                 try {
-                    rawData = JsonUtils.asJsonElement(Objects.requireNonNull(WebUtil.fetchString("https://skyclient.co/assets/tags.json")).replace('&', ChatColor.COLOR_CHAR)).getAsJsonObject();
+                    rawData = new JsonParser().parse(Objects.requireNonNull(WebUtil.fetchString("https://skyclient.co/assets/tags.json")).replace('&', ChatColor.COLOR_CHAR)).getAsJsonObject();
                     Multithreading.runAsync(() -> {
                         try {
                             FileUtils.writeStringToFile(cacheFile, GSON.toJson(rawData), StandardCharsets.UTF_8);
@@ -54,7 +53,7 @@ public class TagCosmetics {
                     e.printStackTrace();
                     if (cacheFile.exists()) {
                         try {
-                            rawData = JsonUtils.asJsonElement(FileUtils.readFileToString(cacheFile, StandardCharsets.UTF_8)).getAsJsonObject();
+                            rawData = new JsonParser().parse(FileUtils.readFileToString(cacheFile, StandardCharsets.UTF_8)).getAsJsonObject();
                         } catch (IOException ex) {
                             ex.printStackTrace();
                             return;

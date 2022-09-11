@@ -1,9 +1,9 @@
 package co.skyclient.scc.commands;
 
-import cc.woverflow.onecore.utils.GuiUtils;
 import co.skyclient.scc.cosmetics.Tag;
 import co.skyclient.scc.cosmetics.TagCosmetics;
 import co.skyclient.scc.utils.ChatUtils;
+import gg.essential.api.EssentialAPI;
 import gg.essential.api.commands.Command;
 import gg.essential.api.commands.DefaultHandler;
 import gg.essential.api.commands.DisplayName;
@@ -28,7 +28,7 @@ public class SccComand extends Command {
 
     @DefaultHandler
     public void handle() {
-        GuiUtils.openScreen(SkyclientCosmetics.config);
+        EssentialAPI.getGuiUtil().openScreen(SkyclientCosmetics.config.gui());
     }
 
     @SubCommand("reload")

@@ -17,13 +17,12 @@
 
 package co.skyclient.scc.listeners;
 
-import cc.woverflow.onecore.utils.InternetUtils;
-import cc.woverflow.onecore.utils.JsonUtils;
 import co.skyclient.scc.config.Settings;
 import co.skyclient.scc.cosmetics.Tag;
 import co.skyclient.scc.cosmetics.TagCosmetics;
 import co.skyclient.scc.utils.ChatUtils;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import gg.essential.api.utils.Multithreading;
 import gg.essential.api.utils.WebUtil;
 import gg.essential.universal.ChatColor;
@@ -51,6 +50,8 @@ public class ChatListeners {
     public static Pattern rankRegex = Pattern.compile("\\[(MVP|VIP|PIG|YOUTUBE|MOD|HELPER|ADMIN|OWNER|MOJANG|SLOTH|EVENTS|MCP)([\\+]{1,2})?\\]");
     public static Pattern groupRankRegex = Pattern.compile("((\u00A7[a-f0-9kmolnr](To|From))|(\u00A7[a-f0-9kmolnr](Guild|Co-op|Officer|Party)\\s(\u00A7[a-f0-9kmolnr])?\\\\u003e))\\s((\u00A7[a-f0-9kmolnr])?(\\[(MVP|VIP|PIG|YOUTUBE|MOD|HELPER|ADMIN|OWNER|MOJANG|SLOTH|EVENTS|MCP)([\\+]{1,2})?\\]\\s)?)?[\\w]+(\u00A7[a-f0-9kmolnr])?:");
 
+    private static final JsonParser PARSER = new JsonParser();
+
     @SubscribeEvent
     public void onChatMsgTags(ClientChatReceivedEvent event) {
         if (Settings.showTags) {
@@ -63,7 +64,7 @@ public class ChatListeners {
                     String playerName;
                     if (chatRegex.matcher(cleanMessage).matches()) {
                         if (dmRegex.matcher(cleanMessage).matches()) {
-                            JsonObject jsonParsedMsg = JsonUtils.asJsonElement(parsedMessage).getAsJsonObject();
+                            JsonObject jsonParsedMsg = PARSER.parse(parsedMessage).getAsJsonObject();
                             String playerText = jsonParsedMsg.get("extra").getAsJsonArray().get(0).getAsJsonObject().get("text").getAsString();
                             String playerColor;
                             try {
@@ -127,7 +128,7 @@ public class ChatListeners {
                     ChatUtils.sendSystemMessage(ChatColor.GREEN + "Checking API key");
                     Multithreading.runAsync(() -> {
                         try {
-                            JsonObject response = InternetUtils.fetchJsonElement(WebUtil.INSTANCE, "https://api.hypixel.net/key?key=" + key).getAsJsonObject();
+                            JsonObject response = WebUtil.fetchJSON("https://api.hypixel.net/key?key=" + key).getObject();
 
                             if (response.get("success").getAsBoolean() && response.get("record").getAsJsonObject().get("owner").getAsString().replaceAll("-", "").equals(Minecraft.getMinecraft().getSession().getPlayerID())) {
                                 ChatUtils.sendSystemMessage(ChatColor.GREEN + "Verified API key!");
