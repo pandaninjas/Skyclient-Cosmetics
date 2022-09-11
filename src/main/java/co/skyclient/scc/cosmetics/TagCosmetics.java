@@ -41,7 +41,7 @@ public class TagCosmetics {
         Multithreading.runAsync(() -> {
             try {
                 try {
-                    rawData = new JsonParser().parse(Objects.requireNonNull(WebUtil.fetchString("https://skyclient.co/assets/tags.json")).replace('&', ChatColor.COLOR_CHAR)).getAsJsonObject();
+                    rawData = new JsonParser().parse(Objects.requireNonNull(WebUtil.fetchString("https://cdn.jsdelivr.net/gh/KTibow/Skyclient@main/docs/assets/tags.json")).replace('&', ChatColor.COLOR_CHAR)).getAsJsonObject();
                     Multithreading.runAsync(() -> {
                         try {
                             FileUtils.writeStringToFile(cacheFile, GSON.toJson(rawData), StandardCharsets.UTF_8);
