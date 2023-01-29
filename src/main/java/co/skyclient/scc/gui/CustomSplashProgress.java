@@ -295,7 +295,7 @@ public class CustomSplashProgress {
                         if (first != null) {
                             glPushMatrix();
                             int barOffset = 55;
-                            glTranslatef(320 - (float) barWidth / 2, 310 + barOffset, 0);
+                            glTranslatef(320 - (float) barWidth / 2, 320 + barOffset, 0);
                             drawBar(first);
                             if (penult != null) {
                                 glTranslatef(0, barOffset, 0);
@@ -306,7 +306,7 @@ public class CustomSplashProgress {
                     } else {
                         if (first != null) {
                             glPushMatrix();
-                            glTranslatef(320 - (float) barWidth / 2, 310, 0);
+                            glTranslatef(320 - (float) barWidth / 2, 320, 0);
                             drawBar(first);
                             int barOffset = 55;
                             if (penult != null) {
