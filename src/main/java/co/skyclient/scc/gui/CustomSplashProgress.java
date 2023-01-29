@@ -55,6 +55,7 @@ public class CustomSplashProgress {
     private static final IResourcePack fmlPack = createResourcePack(FMLSanityChecker.fmlLocation);
     private static final IntBuffer buf = BufferUtils.createIntBuffer(4 * 1024 * 1024);
     private static String funFact = null;
+    private static String safetyFact = null;
     private static Drawable d;
     private static volatile boolean pause = false;
     private static volatile boolean done = false;
@@ -88,6 +89,16 @@ public class CustomSplashProgress {
 
     private static boolean getBool(String name, boolean def) {
         return Boolean.parseBoolean(getString(name, Boolean.toString(def)));
+    }
+
+    private static String fetchOneLine(String source) {
+        String stringList = WebUtil.fetchString(source);
+        if (stringList != null) {
+            String[] lines = stringList.split("\n");
+            int index = (int) (Math.random() * lines.length);
+            return lines[index];
+        }
+        return null;
     }
 
     public static void start() {
@@ -186,12 +197,8 @@ public class CustomSplashProgress {
 
         Multithreading.runAsync(() -> {
             try {
-                String text = WebUtil.fetchString("https://cdn.jsdelivr.net/gh/KTibow/Skyclient@main/docs/assets/funfacts.txt");
-                if (text != null) {
-                    String[] lines = text.split("\n");
-                    int index = (int) (Math.random() * lines.length);
-                    funFact = lines[index];
-                }
+                funFact = fetchOneLine("https://cdn.jsdelivr.net/gh/KTibow/Skyclient@main/docs/assets/funfacts.txt");
+                safetyFact = fetchOneLine("https://cdn.jsdelivr.net/gh/KTibow/Skyclient@main/docs/assets/unfunfacts.txt");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -261,15 +268,23 @@ public class CustomSplashProgress {
                     glDisable(GL_TEXTURE_2D);
                     glPopMatrix();
 
-                    if (funFact != null && !funFact.isEmpty()) {
+                    if ((funFact != null && !funFact.isEmpty()) || (safetyFact != null && !safetyFact.isEmpty())) {
                         glPushMatrix();
                         setColor(fontColor);
                         glScalef(2, 2, 1);
                         glEnable(GL_TEXTURE_2D);
                         int offset = 0;
-                        for (String segment : funFact.split("\\\\n")) {
-                            fontRenderer.drawString(segment, 160 - (fontRenderer.getStringWidth(segment) / 2), 180 - textHeight2 + offset, 0x000000);
-                            offset += 10;
+                        if (funFact != null && !funFact.isEmpty()) {
+                            for (String segment : funFact.split("\\\\n")) {
+                                fontRenderer.drawString(segment, 160 - (fontRenderer.getStringWidth(segment) / 2), 180 - textHeight2 + offset, 0x000000);
+                                offset += 10;
+                            }
+                        }
+                        if (safetyFact != null && !safetyFact.isEmpty()) {
+                            for (String segment : safetyFact.split("\\\\n")) {
+                                fontRenderer.drawString(segment, 160 - (fontRenderer.getStringWidth(segment) / 2), 180 - textHeight2 + offset, 0x000000);
+                                offset += 10;
+                            }
                         }
                         glDisable(GL_TEXTURE_2D);
                         glPopMatrix();
