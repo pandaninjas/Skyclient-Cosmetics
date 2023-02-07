@@ -55,7 +55,6 @@ public class CustomSplashProgress {
     private static final IResourcePack fmlPack = createResourcePack(FMLSanityChecker.fmlLocation);
     private static final IntBuffer buf = BufferUtils.createIntBuffer(4 * 1024 * 1024);
     private static String funFact = null;
-    private static String safetyFact = null;
     private static Drawable d;
     private static volatile boolean pause = false;
     private static volatile boolean done = false;
@@ -197,8 +196,11 @@ public class CustomSplashProgress {
 
         Multithreading.runAsync(() -> {
             try {
-                funFact = fetchOneLine("https://cdn.jsdelivr.net/gh/KTibow/Skyclient@main/docs/assets/funfacts.txt");
-                safetyFact = fetchOneLine("https://cdn.jsdelivr.net/gh/KTibow/Skyclient@main/docs/assets/unfunfacts.txt");
+                if (Math.random() > 0.4) {
+                    funFact = fetchOneLine("https://cdn.jsdelivr.net/gh/KTibow/Skyclient@main/docs/assets/funfacts.txt");
+                } else {
+                    funFact = fetchOneLine("https://cdn.jsdelivr.net/gh/KTibow/Skyclient@main/docs/assets/unfunfacts.txt");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -268,7 +270,7 @@ public class CustomSplashProgress {
                     glDisable(GL_TEXTURE_2D);
                     glPopMatrix();
 
-                    if ((funFact != null && !funFact.isEmpty()) || (safetyFact != null && !safetyFact.isEmpty())) {
+                    if (funFact != null && !funFact.isEmpty()) {
                         glPushMatrix();
                         setColor(fontColor);
                         glScalef(2, 2, 1);
@@ -276,12 +278,6 @@ public class CustomSplashProgress {
                         int offset = 0;
                         if (funFact != null && !funFact.isEmpty()) {
                             for (String segment : funFact.split("\\\\n")) {
-                                fontRenderer.drawString(segment, 160 - (fontRenderer.getStringWidth(segment) / 2), 180 - textHeight2 + offset, 0x000000);
-                                offset += 10;
-                            }
-                        }
-                        if (safetyFact != null && !safetyFact.isEmpty()) {
-                            for (String segment : safetyFact.split("\\\\n")) {
                                 fontRenderer.drawString(segment, 160 - (fontRenderer.getStringWidth(segment) / 2), 180 - textHeight2 + offset, 0x000000);
                                 offset += 10;
                             }
@@ -295,7 +291,7 @@ public class CustomSplashProgress {
                         if (first != null) {
                             glPushMatrix();
                             int barOffset = 55;
-                            glTranslatef(320 - (float) barWidth / 2, 320 + barOffset, 0);
+                            glTranslatef(320 - (float) barWidth / 2, 310 + barOffset, 0);
                             drawBar(first);
                             if (penult != null) {
                                 glTranslatef(0, barOffset, 0);
